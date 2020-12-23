@@ -24,10 +24,51 @@ class MainApp(QMainWindow, FORM_CLASS):
         super(MainApp, self).__init__(parent)
         QMainWindow.__init__(self)
         self.setupUi(self)
-
+        ############ PAGE Settings ############
+        self.pushButton_3.clicked.connect(self.create_DB)
         self.pushButton_2.clicked.connect(self.getDblocation)  # Brows DB
-        self.pushButton_3.clicked.connect(self.create_connection)
         self.pushButton.clicked.connect(self.connection)
+        ############ PAGE Settings ############
+
+        self.pushButton_4.clicked.connect(self.showAlltab)
+
+
+    def showAlltab(self):
+
+        con = sqlite3.connect(self.label_3.text())
+        cursor = con.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        print(cursor.fetchall())
+
+
+    ############ PAGE Settings ############
+    ################tables creation ##############################################
+
+    def crieatAllTables(self, con):
+        cursorObj = con.cursor()
+        cursorObj.execute(
+            "CREATE TABLE employees(id integer PRIMARY KEY, name text, salary real, department text, position text, hireDate text)")
+        con.commit()
+
+
+    def create_DB(self):
+        this_path = os.getcwd()
+        databaseName = self.lineEdit_2.text()
+        if len(databaseName) == 0 :
+            QMessageBox.about(self, "Title", "Message")
+        else:
+            db_in = this_path+"\\"+databaseName+".db"
+            connection = None
+            try:
+                connection = sqlite3.connect(db_in)
+                print("Connection to SQLite DB successful")
+                self.crieatAllTables(connection)
+                print("the tabels are created ")
+            except Error as e:
+                print(f"The error '{e}' occurred")
+            fullPath = this_path + "\\" + databaseName + ".db"
+            self.lineEdit.setText(fullPath)
+            return connection
 
 
     def getDblocation(self):
@@ -37,40 +78,22 @@ class MainApp(QMainWindow, FORM_CLASS):
         self.lineEdit.setText(name)
 
 
-    def create_connection(self):
-        this_path = os.getcwd()
-        db_name = self.lineEdit_2.text()
-        if len(db_name) == 0 :
-            QMessageBox.about(self, "Title", "Message")
-        else:
-            db_in = this_path+"\\"+db_name+".db"
-            connection = None
-            try:
-                connection = sqlite3.connect(db_in)
-                print("Connection to SQLite DB successful")
-                self.label_3.setText(db_name)
-            except Error as e:
-                print(f"The error '{e}' occurred")
-
-            fullPath = this_path + "\\" + db_name + ".db"
-            print(fullPath)
-            self.lineEdit.setText(fullPath)
-
-            return connection
-
-
     def connection(self):
         path = self.lineEdit.text()
-        db_name = path.split("/")[-1].split(".")[0]
+        databaseName = path.split("/")[-1]
         connection = None
         try:
             connection = sqlite3.connect(path)
             print("Connection to SQLite DB successful")
-            self.label_3.setText(db_name)
+            self.label_3.setText(databaseName)
         except Error as e:
             print(f"The error '{e}' occurred")
         return connection
 
+    ########################
+
+    ############ PAGE 1 ############
+    ############ PAGE 1 ############
 
 
 
@@ -88,8 +111,6 @@ class MainApp(QMainWindow, FORM_CLASS):
 # to close connection
     con.close()
 '''
-
-
 
 
 def main():
